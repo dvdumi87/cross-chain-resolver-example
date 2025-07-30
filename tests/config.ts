@@ -8,12 +8,17 @@ const bool = z
     .pipe(z.boolean())
 
 const ConfigSchema = z.object({
-    OWNER_PRIVATE_KEY: z.string().default('')
+    OWNER_PRIVATE_KEY: z.string().default(''),
+    USER_PRIVATE_KEY: z.string().default(''),
+    RESOLVER_PRIVATE_KEY: z.string().default(''),
 })
 
 const fromEnv = ConfigSchema.parse(process.env)
 
 export const config = {
+    userPk: fromEnv.USER_PRIVATE_KEY,
+    resolverPk: fromEnv.OWNER_PRIVATE_KEY,
+    ownerPk: fromEnv.OWNER_PRIVATE_KEY,
     chain: {
         ethereum: {
             chainId: Sdk.NetworkEnum.ETHEREUM,
@@ -103,4 +108,12 @@ export const config = {
     }
 } as const
 
-export type ChainConfig = (typeof config.chain)
+export type ChainConfig = {
+    chainId: number
+    url: string
+    createFork?: boolean
+    limitOrderProtocol: string
+    wrappedNative: string
+    tokens: Record<string, {address: string; decimals: number}>
+    ownerPrivateKey: string
+}

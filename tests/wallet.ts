@@ -17,23 +17,15 @@ export class Wallet {
                 : privateKeyOrSigner
     }
 
-    public static async fromAddress(address: string, provider: JsonRpcProvider): Promise<Wallet> {
-        await provider.send('anvil_impersonateAccount', [address.toString()])
-
-        const signer = await provider.getSigner(address.toString())
-
-        return new Wallet(signer, provider)
+    public static async fromKey(key: string, provider: JsonRpcProvider): Promise<Wallet> {
+        const wallet = new PKWallet(key, provider)
+        return new Wallet(wallet, provider)
     }
 
     async tokenBalance(token: string): Promise<bigint> {
         const tokenContract = new Contract(token.toString(), ERC20.abi, this.provider)
 
         return tokenContract.balanceOf(await this.getAddress())
-    }
-
-    async topUpFromDonor(token: string, donor: string, amount: bigint): Promise<void> {
-        const donorWallet = await Wallet.fromAddress(donor, this.provider)
-        await donorWallet.transferToken(token, await this.getAddress(), amount)
     }
 
     public async getAddress(): Promise<string> {

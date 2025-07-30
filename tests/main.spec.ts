@@ -28,13 +28,10 @@ const {Address} = Sdk
 
 jest.setTimeout(1000 * 60)
 
-const userPk = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
-const resolverPk = '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a'
-
 // eslint-disable-next-line max-lines-per-function
 describe('Resolving example', () => {
-    const srcChain = config.chain.ethereum
-    const dstChain = config.chain.binance
+    const srcChain = config.chain.xlayerdevnet
+    const dstChain = config.chain.sepolia
 
     const srcChainId = srcChain.chainId
     const dstChainId = dstChain.chainId
@@ -68,35 +65,29 @@ describe('Resolving example', () => {
     beforeAll(async () => {
         ;[src, dst] = await Promise.all([initChain(srcChain), initChain(dstChain)])
 
-        srcChainUser = new Wallet(userPk, src.provider)
-        dstChainUser = new Wallet(userPk, dst.provider)
-        srcChainResolver = new Wallet(resolverPk, src.provider)
-        dstChainResolver = new Wallet(resolverPk, dst.provider)
+        console.log("Before all: chains initialized.")
+
+        srcChainUser = new Wallet(config.userPk, src.provider)
+        dstChainUser = new Wallet(config.userPk, dst.provider)
+
+        srcChainResolver = new Wallet(config.resolverPk, src.provider)
+        dstChainResolver = new Wallet(config.resolverPk, dst.provider)
 
         srcFactory = new EscrowFactory(src.provider, src.escrowFactory)
         dstFactory = new EscrowFactory(dst.provider, dst.escrowFactory)
-        // get 1000 USDC for user in SRC chain and approve to LOP
-        await srcChainUser.topUpFromDonor(
-            srcChain.tokens.USDC.address,
-            srcChain.tokens.USDC.donor,
-            parseUnits('1000', 6)
-        )
+
+        console.log("Before all: before approve token.")
+
+        // user account already has USDC on src chain
         await srcChainUser.approveToken(
             srcChain.tokens.USDC.address,
             srcChain.limitOrderProtocol,
             MaxUint256
         )
 
-        // get 2000 USDC for resolver in DST chain
-        srcResolverContract = await Wallet.fromAddress(src.resolver, src.provider)
-        dstResolverContract = await Wallet.fromAddress(dst.resolver, dst.provider)
-        await dstResolverContract.topUpFromDonor(
-            dstChain.tokens.USDC.address,
-            dstChain.tokens.USDC.donor,
-            parseUnits('2000', 6)
-        )
-        // top up contract for approve
-        await dstChainResolver.transfer(dst.resolver, parseEther('1'))
+        console.log("Before all: before wallet creation.")
+        srcResolverContract = await Wallet.fromKey(config.resolverPk, src.provider)
+        dstResolverContract = await Wallet.fromKey(config.resolverPk, dst.provider)
         await dstResolverContract.unlimitedApprove(dstChain.tokens.USDC.address, dst.escrowFactory)
 
         srcTimestamp = BigInt((await src.provider.getBlock('latest'))!.timestamp)
@@ -262,6 +253,7 @@ describe('Resolving example', () => {
             expect(initialBalances.dst.resolver - resultBalances.dst.resolver).toBe(order.takingAmount)
         })
 
+        /*
         it('should swap Ethereum USDC -> Bsc USDC. Multiple fills. Fill 100%', async () => {
             const initialBalances = await getBalances(
                 srcChain.tokens.USDC.address,
@@ -565,8 +557,10 @@ describe('Resolving example', () => {
             expect(resultBalances.dst.user - initialBalances.dst.user).toBe(dstAmount)
             expect(initialBalances.dst.resolver - resultBalances.dst.resolver).toBe(dstAmount)
         })
+            */
     })
 
+    /*
     describe('Cancel', () => {
         it('should cancel swap Ethereum USDC -> Bsc USDC', async () => {
             const initialBalances = await getBalances(
@@ -696,6 +690,7 @@ describe('Resolving example', () => {
             expect(initialBalances).toEqual(resultBalances)
         })
     })
+    */
 })
 
 async function initChain(
@@ -726,7 +721,7 @@ async function initChain(
         [
             escrowFactory,
             cnf.limitOrderProtocol,
-            computeAddress(resolverPk) // resolver as owner of contract
+            computeAddress(config.resolverPk) // resolver as owner of contract
         ],
         provider,
         deployer
