@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@1inch/byte-utils": "2.6.0",
-    "@1inch/cross-chain-sdk": "file:../cross-chain-sdk/1inch-cross-chain-sdk-0.1.15.tgz",
+    "@1inch/cross-chain-sdk": "file:../cross-chain-sdk",
     "dotenv": "16.4.5",
     "ethers": "6.13.2",
     "prool": "0.0.24"
