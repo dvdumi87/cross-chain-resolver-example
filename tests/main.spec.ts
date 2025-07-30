@@ -123,6 +123,8 @@ describe('Resolving example', () => {
                 dstChain.tokens.USDC.address
             )
 
+            console.log("Initial balances:", initialBalances);
+
             // User creates order
             const secret = uint8ArrayToHex(randomBytes(32)) // note: use crypto secure random number in real world
             const order = Sdk.CrossChainOrder.new(
@@ -173,8 +175,11 @@ describe('Resolving example', () => {
                 }
             )
 
+            console.log("Order created:", order)
+
             const signature = await srcChainUser.signOrder(srcChainId, order)
             const orderHash = order.getOrderHash(srcChainId)
+
             // Resolver fills order
             const resolverContract = new Resolver(src.resolver, dst.resolver)
 

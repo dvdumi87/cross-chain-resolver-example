@@ -16,9 +16,9 @@ const ConfigSchema = z.object({
 const fromEnv = ConfigSchema.parse(process.env)
 
 export const config = {
-    userPk: fromEnv.USER_PRIVATE_KEY,
-    resolverPk: fromEnv.OWNER_PRIVATE_KEY,
     ownerPk: fromEnv.OWNER_PRIVATE_KEY,
+    userPk: fromEnv.USER_PRIVATE_KEY,
+    resolverPk: fromEnv.RESOLVER_PRIVATE_KEY,
     chain: {
         ethereum: {
             chainId: Sdk.NetworkEnum.ETHEREUM,
