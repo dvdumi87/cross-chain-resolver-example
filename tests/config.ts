@@ -8,6 +8,7 @@ const bool = z
     .pipe(z.boolean())
 
 const ConfigSchema = z.object({
+    OWNER_PRIVATE_KEY: z.string().default('')
 })
 
 const fromEnv = ConfigSchema.parse(process.env)
@@ -41,7 +42,64 @@ export const config = {
                     donor: '0x4188663a85C92EEa35b5AD3AA5cA7CeB237C6fe9'
                 }
             }
-        }
+        },
+        sepolia: {
+            chainId: 11155111, // Sepolia
+            // url: "https://eth-sepolia.g.alchemy.com/public",
+            url: "https://sepolia.drpc.org",
+            createFork: false,
+            limitOrderProtocol: '0xfD2d1e3F8c4D6ef2386e756824E09316673dE9dC',
+            wrappedNative: '0xc4C937B059311BFbbb9EbF763D3Ac1F7127e9AD1',
+            ownerPrivateKey: fromEnv.OWNER_PRIVATE_KEY,
+            tokens: {
+                USDC: {
+                    address: '0x41FBc84ab268123583Be8Ea7FE99553Bec1a6ec4',
+                    donor: '0x3784Fe4C992871AdCC85dfee2B593bA3253Acc79'
+                }
+            }
+        },
+        xlayertestnet: {
+            chainId: 195, // X Layer testnet
+            url: "https://testrpc.xlayer.tech",
+            createFork: false,
+            limitOrderProtocol: '0xb75f2E2ac461C481599A274108f6bdfED73DD87C',
+            wrappedNative: '0x7B05b8cb6B56dd2614f7F7457046561B1851FAc4',
+            ownerPrivateKey:  fromEnv.OWNER_PRIVATE_KEY,
+            tokens: {
+                USDC: {
+                    address: '0x4945Bc992C3FbD65FA8156B2b7521Cb47F1E2bE1',
+                    donor: '0x3784Fe4C992871AdCC85dfee2B593bA3253Acc79'
+                }
+            }
+        },
+        xlayerdevnet: {
+            chainId: 195, // X Layer devnet
+            url: "http://localhost:8123",
+            createFork: false,
+            limitOrderProtocol: '0xBc9Eb6C1eb8F102EEaFfa97Ef1C131E20C40542d',
+            wrappedNative: '0x38bA08583449266CA01d4CF38c21E1ADe3c8F645',
+            ownerPrivateKey:  fromEnv.OWNER_PRIVATE_KEY,
+            tokens: {
+                USDC: {
+                    address: '0xb75f2E2ac461C481599A274108f6bdfED73DD87C',
+                    donor: '0x3784Fe4C992871AdCC85dfee2B593bA3253Acc79'
+                }
+            }
+        },
+        etherlinktestnet: {
+            chainId: 128123, // Etherlink Testnet
+            url: "https://node.ghostnet.etherlink.com",
+            createFork: false,
+            limitOrderProtocol: '0x111111125421ca6dc452d289314280a0f8842a65',   // TODO
+            wrappedNative: '0x86932ff467A7e055d679F7578A0A4F96Be287861',
+            ownerPrivateKey:  fromEnv.OWNER_PRIVATE_KEY,
+            tokens: {
+                USDC: {
+                    address: '0x4C2AA252BEe766D3399850569713b55178934849',
+                    donor: '0x3784Fe4C992871AdCC85dfee2B593bA3253Acc79'
+                }
+            }
+        },
     }
 } as const
 
