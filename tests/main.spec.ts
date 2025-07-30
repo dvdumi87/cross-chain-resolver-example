@@ -33,8 +33,11 @@ const resolverPk = '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cd
 
 // eslint-disable-next-line max-lines-per-function
 describe('Resolving example', () => {
-    const srcChainId = config.chain.source.chainId
-    const dstChainId = config.chain.destination.chainId
+    const srcChain = config.chain.ethereum
+    const dstChain = config.chain.binance
+
+    const srcChainId = srcChain.chainId
+    const dstChainId = dstChain.chainId
 
     type Chain = {
         node?: CreateServerReturnType | undefined
@@ -63,7 +66,7 @@ describe('Resolving example', () => {
     }
 
     beforeAll(async () => {
-        ;[src, dst] = await Promise.all([initChain(config.chain.source), initChain(config.chain.destination)])
+        ;[src, dst] = await Promise.all([initChain(srcChain), initChain(dstChain)])
 
         srcChainUser = new Wallet(userPk, src.provider)
         dstChainUser = new Wallet(userPk, dst.provider)
@@ -74,13 +77,13 @@ describe('Resolving example', () => {
         dstFactory = new EscrowFactory(dst.provider, dst.escrowFactory)
         // get 1000 USDC for user in SRC chain and approve to LOP
         await srcChainUser.topUpFromDonor(
-            config.chain.source.tokens.USDC.address,
-            config.chain.source.tokens.USDC.donor,
+            srcChain.tokens.USDC.address,
+            srcChain.tokens.USDC.donor,
             parseUnits('1000', 6)
         )
         await srcChainUser.approveToken(
-            config.chain.source.tokens.USDC.address,
-            config.chain.source.limitOrderProtocol,
+            srcChain.tokens.USDC.address,
+            srcChain.limitOrderProtocol,
             MaxUint256
         )
 
@@ -88,13 +91,13 @@ describe('Resolving example', () => {
         srcResolverContract = await Wallet.fromAddress(src.resolver, src.provider)
         dstResolverContract = await Wallet.fromAddress(dst.resolver, dst.provider)
         await dstResolverContract.topUpFromDonor(
-            config.chain.destination.tokens.USDC.address,
-            config.chain.destination.tokens.USDC.donor,
+            dstChain.tokens.USDC.address,
+            dstChain.tokens.USDC.donor,
             parseUnits('2000', 6)
         )
         // top up contract for approve
         await dstChainResolver.transfer(dst.resolver, parseEther('1'))
-        await dstResolverContract.unlimitedApprove(config.chain.destination.tokens.USDC.address, dst.escrowFactory)
+        await dstResolverContract.unlimitedApprove(dstChain.tokens.USDC.address, dst.escrowFactory)
 
         srcTimestamp = BigInt((await src.provider.getBlock('latest'))!.timestamp)
     })
@@ -125,8 +128,8 @@ describe('Resolving example', () => {
     describe('Fill', () => {
         it('should swap Ethereum USDC -> Bsc USDC. Single fill only', async () => {
             const initialBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             // User creates order
@@ -138,8 +141,8 @@ describe('Resolving example', () => {
                     maker: new Address(await srcChainUser.getAddress()),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Address(srcChain.tokens.USDC.address),
+                    takerAsset: new Address(dstChain.tokens.USDC.address)
                 },
                 {
                     hashLock: Sdk.HashLock.forSingleFill(secret),
@@ -247,8 +250,8 @@ describe('Resolving example', () => {
             )
 
             const resultBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             // user transferred funds to resolver on source chain
@@ -261,8 +264,8 @@ describe('Resolving example', () => {
 
         it('should swap Ethereum USDC -> Bsc USDC. Multiple fills. Fill 100%', async () => {
             const initialBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             // User creates order
@@ -277,8 +280,8 @@ describe('Resolving example', () => {
                     maker: new Address(await srcChainUser.getAddress()),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Address(srcChain.tokens.USDC.address),
+                    takerAsset: new Address(dstChain.tokens.USDC.address)
                 },
                 {
                     hashLock: Sdk.HashLock.forMultipleFills(leaves),
@@ -399,8 +402,8 @@ describe('Resolving example', () => {
             )
 
             const resultBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             // user transferred funds to resolver on the source chain
@@ -413,8 +416,8 @@ describe('Resolving example', () => {
 
         it('should swap Ethereum USDC -> Bsc USDC. Multiple fills. Fill 50%', async () => {
             const initialBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             // User creates order
@@ -429,8 +432,8 @@ describe('Resolving example', () => {
                     maker: new Address(await srcChainUser.getAddress()),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Address(srcChain.tokens.USDC.address),
+                    takerAsset: new Address(dstChain.tokens.USDC.address)
                 },
                 {
                     hashLock: Sdk.HashLock.forMultipleFills(leaves),
@@ -550,8 +553,8 @@ describe('Resolving example', () => {
             )
 
             const resultBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             // user transferred funds to resolver on the source chain
@@ -567,8 +570,8 @@ describe('Resolving example', () => {
     describe('Cancel', () => {
         it('should cancel swap Ethereum USDC -> Bsc USDC', async () => {
             const initialBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             // User creates order
@@ -580,8 +583,8 @@ describe('Resolving example', () => {
                     maker: new Address(await srcChainUser.getAddress()),
                     makingAmount: parseUnits('100', 6),
                     takingAmount: parseUnits('99', 6),
-                    makerAsset: new Address(config.chain.source.tokens.USDC.address),
-                    takerAsset: new Address(config.chain.destination.tokens.USDC.address)
+                    makerAsset: new Address(srcChain.tokens.USDC.address),
+                    takerAsset: new Address(dstChain.tokens.USDC.address)
                 },
                 {
                     hashLock,
@@ -686,8 +689,8 @@ describe('Resolving example', () => {
             console.log(`[${srcChainId}]`, `Cancelled src escrow ${srcEscrowAddress} in tx ${cancelSrcEscrow}`)
 
             const resultBalances = await getBalances(
-                config.chain.source.tokens.USDC.address,
-                config.chain.destination.tokens.USDC.address
+                srcChain.tokens.USDC.address,
+                dstChain.tokens.USDC.address
             )
 
             expect(initialBalances).toEqual(resultBalances)
